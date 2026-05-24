@@ -1,1 +1,1 @@
-from core.schema import *
+from core.schema import *  # noqa: F403

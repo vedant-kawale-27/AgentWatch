@@ -147,7 +147,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: deploy/docker/Dockerfile.api
+          file: Dockerfile.api
           push: false
           tags: agentwatch/api:${{ github.sha }}
           cache-from: type=gha
@@ -156,7 +156,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          file: deploy/docker/Dockerfile.frontend
+          file: frontend/Dockerfile
           push: false
           tags: agentwatch/frontend:${{ github.sha }}
           cache-from: type=gha

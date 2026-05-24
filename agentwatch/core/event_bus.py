@@ -1,1 +1,1 @@
-from core.event_bus import *
+from core.event_bus import *  # noqa: F403

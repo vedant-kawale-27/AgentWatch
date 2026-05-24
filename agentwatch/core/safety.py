@@ -10,9 +10,8 @@ import asyncio
 import fnmatch
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from agentwatch.core.schema import (
     AgentEvent,
@@ -30,9 +29,10 @@ logger = logging.getLogger(__name__)
 # Risk pattern definitions
 # ─────────────────────────────────────────────
 
+
 @dataclass
 class RiskPattern:
-    pattern: str           # regex or glob
+    pattern: str  # regex or glob
     risk_level: RiskLevel
     reason: str
     policy_id: str
@@ -40,7 +40,7 @@ class RiskPattern:
     block_by_default: bool = False
 
 
-BUILTIN_RISK_PATTERNS: List[RiskPattern] = [
+BUILTIN_RISK_PATTERNS: list[RiskPattern] = [
     # Critical — always block
     RiskPattern(
         pattern=r"rm\s+-[rf]+\s*(\/|~|\.\.|\$HOME|\$PWD|/home|/etc|/usr|/var|/bin|/sbin|/boot)",
@@ -77,7 +77,6 @@ BUILTIN_RISK_PATTERNS: List[RiskPattern] = [
         policy_id="SUDO_DESTRUCTIVE",
         block_by_default=True,
     ),
-
     # High — require approval
     RiskPattern(
         pattern=r"rm\s+-[rf]+",
@@ -121,7 +120,6 @@ BUILTIN_RISK_PATTERNS: List[RiskPattern] = [
         policy_id="DB_DESTRUCTIVE",
         block_by_default=False,
     ),
-
     # Medium — log and notify
     RiskPattern(
         pattern=r"(npm|pip|gem|cargo)\s+install\s+.*--global",
@@ -158,6 +156,7 @@ BUILTIN_RISK_PATTERNS: List[RiskPattern] = [
 # Policy
 # ─────────────────────────────────────────────
 
+
 @dataclass
 class SafetyPolicy:
     policy_id: str
@@ -168,16 +167,16 @@ class SafetyPolicy:
     require_approval_on_medium: bool = False
     require_approval_on_high: bool = True
     approval_timeout_seconds: int = 120
-    allowed_agent_ids: Set[str] = field(default_factory=set)
-    blocked_agent_ids: Set[str] = field(default_factory=set)
-    custom_patterns: List[RiskPattern] = field(default_factory=list)
+    allowed_agent_ids: set[str] = field(default_factory=set)
+    blocked_agent_ids: set[str] = field(default_factory=set)
+    custom_patterns: list[RiskPattern] = field(default_factory=list)
 
 
 DEFAULT_POLICY = SafetyPolicy(
     policy_id="default",
     name="Default Safety Policy",
-    block_on_high=False,      # require approval but don't auto-block
-    block_on_critical=True,   # always block critical
+    block_on_high=False,  # require approval but don't auto-block
+    block_on_critical=True,  # always block critical
     require_approval_on_high=True,
 )
 
@@ -185,6 +184,7 @@ DEFAULT_POLICY = SafetyPolicy(
 # ─────────────────────────────────────────────
 # Risk scorer
 # ─────────────────────────────────────────────
+
 
 def _score_for_level(level: RiskLevel) -> float:
     return {
@@ -199,16 +199,16 @@ def _score_for_level(level: RiskLevel) -> float:
 class RiskScorer:
     """Evaluates the risk of a tool call against known patterns."""
 
-    def __init__(self, extra_patterns: Optional[List[RiskPattern]] = None):
+    def __init__(self, extra_patterns: list[RiskPattern] | None = None):
         self._patterns = list(BUILTIN_RISK_PATTERNS)
         if extra_patterns:
             self._patterns.extend(extra_patterns)
 
-    def score(self, tool_call: ToolCallData) -> Tuple[RiskLevel, float, List[str], List[str]]:
+    def score(self, tool_call: ToolCallData) -> tuple[RiskLevel, float, list[str], list[str]]:
         """
         Returns (risk_level, risk_score, reasons, matched_policy_ids)
         """
-        candidates: List[str] = []
+        candidates: list[str] = []
         if tool_call.raw_command:
             candidates.append(tool_call.raw_command)
         if tool_call.tool_name:
@@ -221,8 +221,8 @@ class RiskScorer:
 
         matched_level = RiskLevel.SAFE
         matched_score = 0.0
-        reasons: List[str] = []
-        policies: List[str] = []
+        reasons: list[str] = []
+        policies: list[str] = []
 
         for pat in self._patterns:
             try:
@@ -267,13 +267,13 @@ class SafetyEngine:
 
     def __init__(
         self,
-        policy: Optional[SafetyPolicy] = None,
-        approval_callback: Optional[ApprovalCallback] = None,
+        policy: SafetyPolicy | None = None,
+        approval_callback: ApprovalCallback | None = None,
     ):
         self._policy = policy or DEFAULT_POLICY
         self._scorer = RiskScorer(extra_patterns=self._policy.custom_patterns)
         self._approval_callback = approval_callback
-        self._pending_approvals: Dict[str, asyncio.Future[bool]] = {}
+        self._pending_approvals: dict[str, asyncio.Future[bool]] = {}
         self._blocked_count = 0
         self._approved_count = 0
         self._checked_count = 0
@@ -343,9 +343,7 @@ class SafetyEngine:
 
         return event
 
-    async def _request_approval(
-        self, event: AgentEvent, safety_data: SafetyCheckData
-    ) -> bool:
+    async def _request_approval(self, event: AgentEvent, safety_data: SafetyCheckData) -> bool:
         if self._approval_callback is None:
             logger.warning(
                 "Approval required for event %s but no callback registered. Blocking.",
@@ -354,11 +352,9 @@ class SafetyEngine:
             return False
         try:
             future = self._approval_callback(event, safety_data)
-            result = await asyncio.wait_for(
-                future, timeout=safety_data.approval_timeout_seconds
-            )
+            result = await asyncio.wait_for(future, timeout=safety_data.approval_timeout_seconds)
             return bool(result)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Approval timeout for event %s. Blocking.", event.event_id)
             return False
 
@@ -369,7 +365,7 @@ class SafetyEngine:
         self._policy = policy
         self._scorer = RiskScorer(extra_patterns=policy.custom_patterns)
 
-    def stats(self) -> Dict[str, int]:
+    def stats(self) -> dict[str, int]:
         return {
             "checked": self._checked_count,
             "blocked": self._blocked_count,
@@ -385,9 +381,8 @@ class SafetyEngine:
 # CLI approval handler (TTY interactive)
 # ─────────────────────────────────────────────
 
-async def cli_approval_handler(
-    event: AgentEvent, safety: SafetyCheckData
-) -> bool:
+
+async def cli_approval_handler(event: AgentEvent, safety: SafetyCheckData) -> bool:
     """Interactive CLI approval prompt for dangerous actions."""
     import sys
 
