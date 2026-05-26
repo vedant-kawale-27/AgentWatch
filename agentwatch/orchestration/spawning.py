@@ -20,7 +20,7 @@ class SpawnNode:
     depth: int = 0
 
 
-class SpawnLimitExceeded(Exception):
+class SpawnLimitExceeded(Exception):  # noqa: N818 — semantic name preserved for API stability
     pass
 
 
@@ -37,9 +37,7 @@ class SpawningTracker:
         if agent_id in self._nodes:
             return self._nodes[agent_id]
         if len(self._nodes) >= self.max_total:
-            raise SpawnLimitExceeded(
-                f"max_total {self.max_total} agents reached"
-            )
+            raise SpawnLimitExceeded(f"max_total {self.max_total} agents reached")
 
         depth = 0
         if parent_id:
@@ -48,9 +46,7 @@ class SpawningTracker:
                 raise ValueError(f"unknown parent: {parent_id}")
             depth = parent.depth + 1
             if depth > self.max_depth:
-                raise SpawnLimitExceeded(
-                    f"max_depth {self.max_depth} exceeded at {agent_id}"
-                )
+                raise SpawnLimitExceeded(f"max_depth {self.max_depth} exceeded at {agent_id}")
 
         node = SpawnNode(agent_id=agent_id, parent_id=parent_id, depth=depth)
         self._nodes[agent_id] = node
@@ -75,8 +71,7 @@ class SpawningTracker:
     def to_dict(self) -> dict:
         return {
             "nodes": [
-                {**n.__dict__, "spawned_at": n.spawned_at.isoformat()}
-                for n in self._nodes.values()
+                {**n.__dict__, "spawned_at": n.spawned_at.isoformat()} for n in self._nodes.values()
             ],
             "children": dict(self._children),
         }

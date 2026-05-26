@@ -9,7 +9,6 @@ formatted plain-text report.
 from __future__ import annotations
 
 import io
-import json
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -54,7 +53,9 @@ def generate(session_id: str, events: list[AgentEvent]) -> SecurityReport:
     injection = sum(
         1
         for e in events
-        if (e.tool_result and e.tool_result.output and scan_text(str(e.tool_result.output)).detected)
+        if (
+            e.tool_result and e.tool_result.output and scan_text(str(e.tool_result.output)).detected
+        )
         or (e.prompt_preview and scan_text(e.prompt_preview).detected)
     )
 
@@ -102,7 +103,7 @@ def to_pdf_bytes(report: SecurityReport) -> bytes:
 
 def _text_lines(report: SecurityReport) -> list[str]:
     lines = [
-        f"AgentWatch Security Report",
+        "AgentWatch Security Report",
         f"Session: {report.session_id}",
         f"Generated: {report.generated_at.isoformat()}",
         f"Verdict: {report.summary.get('verdict')}",

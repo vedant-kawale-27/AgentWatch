@@ -11,12 +11,12 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncIterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
 from agentwatch.core.event_bus import EventBus, get_event_bus
-from agentwatch.core.schema import AgentEvent, AgentSession, EventType, ExecutionStatus
+from agentwatch.core.schema import AgentEvent, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,8 @@ class LiveStreamHub:
         payload = {
             "type": "event",
             "event": event.model_dump_for_storage(),
-            "session": session.__dict__ | {
+            "session": session.__dict__
+            | {
                 "started_at": session.started_at.isoformat(),
                 "last_event_at": session.last_event_at.isoformat()
                 if session.last_event_at
@@ -126,9 +127,7 @@ class LiveStreamHub:
                 {
                     **s.__dict__,
                     "started_at": s.started_at.isoformat(),
-                    "last_event_at": s.last_event_at.isoformat()
-                    if s.last_event_at
-                    else None,
+                    "last_event_at": s.last_event_at.isoformat() if s.last_event_at else None,
                 }
                 for s in self._sessions.values()
             ],

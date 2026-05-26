@@ -8,7 +8,7 @@ One-click recalibrate adjusts the threshold to a target precision/recall.
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 
@@ -17,7 +17,7 @@ class CalibrationSample:
     when: datetime
     score: float
     actual_outcome: bool  # True = was actually bad
-    flagged: bool        # True = auditor said bad
+    flagged: bool  # True = auditor said bad
 
 
 @dataclass
@@ -86,9 +86,7 @@ class CalibrationTracker:
                 tn += 1
             else:
                 fn += 1
-        return CalibrationStats(
-            total=len(self._samples), tp=tp, fp=fp, tn=tn, fn=fn
-        )
+        return CalibrationStats(total=len(self._samples), tp=tp, fp=fp, tn=tn, fn=fn)
 
     def detect_decay(self, *, max_fpr: float = 0.2) -> bool:
         return self.stats().fpr > max_fpr

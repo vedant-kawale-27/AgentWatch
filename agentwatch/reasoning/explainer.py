@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agentwatch.core.schema import AgentEvent, EventType, RiskLevel, SafetyCheckData
+from agentwatch.core.schema import AgentEvent, RiskLevel, SafetyCheckData
 
 
 @dataclass
@@ -58,9 +58,7 @@ def explain(event: AgentEvent) -> BlockExplanation:
     reasons = "; ".join(safety.reasons) or "no_explicit_reason"
 
     tool_name = event.tool_call.tool_name if event.tool_call else "n/a"
-    raw_cmd = (
-        event.tool_call.raw_command if event.tool_call and event.tool_call.raw_command else ""
-    )
+    raw_cmd = event.tool_call.raw_command if event.tool_call and event.tool_call.raw_command else ""
 
     if safety.risk_level == RiskLevel.CRITICAL:
         headline = f"Critical: {tool_name} blocked"

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import random
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from agentwatch.core.schema import AgentEvent, EventType, ExecutionStatus
 
@@ -57,9 +57,7 @@ class FailureAlwaysSampler:
                 return SamplingDecision(keep=True, reason="failure")
             keep = random.random() < self.success_rate  # noqa: S311
             self._session_decisions[sid] = keep
-            return SamplingDecision(
-                keep=keep, reason=f"success_rate={self.success_rate}"
-            )
+            return SamplingDecision(keep=keep, reason=f"success_rate={self.success_rate}")
 
         # Mid-session: defer to a previous decision, else keep
         prior = self._session_decisions.get(sid)
