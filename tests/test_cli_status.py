@@ -101,3 +101,8 @@ def test_status_command_other_http_error(mock_sleep):
 
     assert result.exit_code == 0
     assert "Server Error" in result.stdout
+
+
+def test_status_command_invalid_refresh_rate():
+    result = runner.invoke(app, ["server", "status", "--refresh", "0"])
+    assert result.exit_code != 0

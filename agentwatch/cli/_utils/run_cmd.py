@@ -75,7 +75,7 @@ def run(
                     f"'{''.join(invalid_chars)}'. Argument value: {repr(arg)}"
                 )
 
-    logger.debug("Executing command: %s", " ".join(args))
+    logger.debug("Executing command: %s", args[0])
 
     try:
         # Prefer subprocess.run with shell=False
@@ -96,9 +96,13 @@ def run(
 
     if result.returncode != 0:
         logger.error(
-            "Command '%s' failed with exit code %d.\nSTDOUT:\n%s\nSTDERR:\n%s",
-            " ".join(args),
+            "Command '%s' failed with exit code %d.",
+            args[0],
             result.returncode,
+        )
+        logger.debug(
+            "Command '%s' output:\nSTDOUT:\n%s\nSTDERR:\n%s",
+            args[0],
             result.stdout,
             result.stderr,
         )

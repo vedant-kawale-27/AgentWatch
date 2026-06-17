@@ -1,12 +1,18 @@
-"""AgentWatch CLI Animator.
-
-Handles loading states, terminal progress animations, and audible safety notifications.
-"""
-
 from __future__ import annotations
 
 import asyncio
+import os
+import random
+import subprocess  # nosec B404
 import sys
+import time
+from typing import Any
+
+from rich.align import Align
+from rich.console import Console
+from rich.live import Live
+from rich.panel import Panel
+from rich.table import Table
 
 from agentwatch.cli._utils.speech import speak
 
@@ -55,18 +61,7 @@ class CLIAnimator:
         sys.stdout.write(f"\n🚫 [BLOCKED] {msg}\n")
         sys.stdout.flush()
         speak(msg)
-import os
-import random
-import subprocess  # nosec
-import sys
-import time
-from typing import Any
 
-from rich.align import Align
-from rich.console import Console
-from rich.live import Live
-from rich.panel import Panel
-from rich.table import Table
 
 console = Console()
 
@@ -81,11 +76,13 @@ def speak_welcome() -> None:
         user = "Commander"
 
     if sys.platform == "win32":
-        cmd = f"Add-Type -AssemblyName System.speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Rate = 1; $synth.Speak('Welcome {user}, to Agent Watch.')"
+        # Sanitize username strictly to prevent injection into PowerShell command string
+        safe_user = "".join(c for c in user if c.isalnum() or c in " _-")
+        cmd = f"Add-Type -AssemblyName System.Speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Rate = 1; $synth.Speak('Welcome {safe_user}, to Agent Watch.')"
         # Run in background so it talks while animating
         # Prevent window flashing which steals focus
         subprocess.Popen(  # nosec # noqa: S603, S607
-            ["powershell", "-WindowStyle", "Hidden", "-Command", cmd],  # noqa: S607
+            ["powershell.exe", "-NoProfile", "-WindowStyle", "Hidden", "-Command", cmd],  # noqa: S607
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             creationflags=subprocess.CREATE_NO_WINDOW,

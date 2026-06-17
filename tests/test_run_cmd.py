@@ -132,7 +132,7 @@ def test_speech_darwin_say():
             shell=False,
             capture_output=True,
             text=True,
-            timeout=None,
+            timeout=10.0,
             env=None,
             cwd=None,
         )
@@ -165,7 +165,7 @@ def test_speech_linux_espeak():
             shell=False,
             capture_output=True,
             text=True,
-            timeout=None,
+            timeout=10.0,
             env=None,
             cwd=None,
         )

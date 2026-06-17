@@ -848,10 +848,14 @@ def serve(
 @server_app.command(name="status")
 def status(
     api_url: str = typer.Option("http://localhost:8000", "--api"),
-    refresh_rate: float = typer.Option(1.0, "--refresh", help="Refresh rate in seconds"),
+    refresh_rate: float = typer.Option(
+        1.0, "--refresh", min=0.1, help="Refresh rate in seconds (must be >= 0.1)"
+    ),
     api_key: str | None = API_KEY_OPTION,
 ) -> None:
     """[bold]Show[/bold] a real-time live dashboard of AgentWatch runtime status."""
+    if refresh_rate <= 0:
+        raise typer.BadParameter("Refresh rate must be greater than 0.")
 
     async def _run() -> None:
         try:

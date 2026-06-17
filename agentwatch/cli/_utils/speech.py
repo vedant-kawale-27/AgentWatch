@@ -33,7 +33,7 @@ def speak(message: str) -> bool:
     try:
         if sys.platform == "darwin":
             # macOS: use native 'say' command
-            run_cmd.run(["say", safe_msg])
+            run_cmd.run(["say", safe_msg], timeout=10.0)
             return True
         elif sys.platform == "win32":
             # Windows: use PowerShell SpeechSynthesis
@@ -44,11 +44,11 @@ def speak(message: str) -> bool:
                 "-Command",
                 f"Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('{safe_msg}')",
             ]
-            run_cmd.run(cmd, check_args=False)
+            run_cmd.run(cmd, check_args=False, timeout=10.0)
             return True
         else:
             # Linux / Unix / BSD: try 'espeak'
-            run_cmd.run(["espeak", safe_msg])
+            run_cmd.run(["espeak", safe_msg], timeout=10.0)
             return True
     except Exception as exc:
         logger.debug("Speech synthesis failed or is unavailable: %s", exc)
