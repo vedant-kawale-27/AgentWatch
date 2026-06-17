@@ -1,4 +1,5 @@
-﻿"""Tests for Slack and PagerDuty channel configuration validation."""
+"""Tests for Slack and PagerDuty channel configuration validation."""
+
 from __future__ import annotations
 
 import pytest
@@ -14,6 +15,7 @@ from agentwatch.alerting.channels import (
 # ---------------------------------------------------------------------------
 # Slack webhook tests
 # ---------------------------------------------------------------------------
+
 
 def test_valid_slack_webhook():
     validate_slack_webhook("https://hooks.slack.com/services/TABC12345/BABC12345/abcdefghijklmnop")
@@ -38,6 +40,7 @@ def test_invalid_slack_webhook_empty_string():
 # PagerDuty routing key tests
 # ---------------------------------------------------------------------------
 
+
 def test_valid_pagerduty_key():
     validate_pagerduty_key("a" * 32)
 
@@ -61,6 +64,7 @@ def test_invalid_pagerduty_key_empty_string():
 # PagerDuty webhook tests
 # ---------------------------------------------------------------------------
 
+
 def test_valid_pagerduty_webhook():
     validate_pagerduty_webhook("https://events.pagerduty.com/v2/enqueue")
 
@@ -83,6 +87,7 @@ def test_invalid_pagerduty_webhook_empty_string():
 # ---------------------------------------------------------------------------
 # validate_channels (combined) tests
 # ---------------------------------------------------------------------------
+
 
 def test_validate_channels_all_none():
     validate_channels()
@@ -133,4 +138,3 @@ def test_validate_channels_missing_pagerduty_url_raises():
             pagerduty_webhook_url=None,
             pagerduty_routing_key="a" * 32,
         )
-
