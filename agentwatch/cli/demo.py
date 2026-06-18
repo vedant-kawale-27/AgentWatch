@@ -245,10 +245,6 @@ async def demo_safety():
             }.get(safety.risk_level.value, str)
 
             status_icon = "🚫" if result.is_blocked else "✓"
-            if result.is_blocked:
-                from agentwatch.cli._utils.speech import speak
-
-                speak(f"Safety block triggered for command {cmd[:30]}")
             print(
                 f"  {status_icon}  {level_color(f'[{safety.risk_level.value.upper():8}]')} "
                 f"{dim(cmd[:50])} {dim('→')} {label}"

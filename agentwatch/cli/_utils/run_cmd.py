@@ -47,6 +47,24 @@ def run(
 ) -> subprocess.CompletedProcess[str]:
     """Execute a command securely with shell=False and argument validation.
 
+    Security Model & `check_args`:
+    - By default, executing processes with `shell=False` prevents shell injection (such as
+      pipes, redirects, or command chaining) because the operating system invokes the target
+      executable directly without spawning a command interpreter.
+    - When `check_args=True` (default), arguments are additionally validated against a strict character
+      whitelist (`ALLOWED_ARG_RE`). This serves as defense-in-depth against:
+        1. Argument injection (e.g. passing `-` or `--` option flags controlled by untrusted users).
+        2. Downstream shell parsing (where the target process itself interprets arguments inside a shell).
+    
+    When is bypassing validation (`check_args=False`) acceptable?
+    - Bypassing validation is acceptable ONLY when:
+        1. The command contains safe, hardcoded programmatic arguments that use characters blocked
+           by the strict whitelist regex (e.g. semicolons, brackets, parentheses, or quotes).
+        2. Any user-controlled parts of the arguments have been strictly pre-sanitized or matched
+           against a safe allow-list prior to calling this function.
+        3. Invoking internal utilities (like git or docker) that require complex syntaxes, provided
+           untrusted user input is not concatenated into the arguments.
+
     Args:
         args: List of command arguments. First element is the executable.
         check_args: If True, validate each argument against ALLOWED_ARG_RE.

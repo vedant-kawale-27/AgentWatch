@@ -1,4 +1,4 @@
-"""Unit tests for run_cmd secure wrapper and speech synthesis utilities."""
+"""Unit tests for run_cmd secure wrapper."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ from unittest import mock
 import pytest
 
 from agentwatch.cli._utils import run_cmd
-from agentwatch.cli._utils.speech import speak
 
 
 def test_run_cmd_valid_execution():
@@ -119,61 +118,3 @@ def test_run_cmd_execution_exception():
         assert "Failed to execute command 'invalid_command'" in str(exc_info.value)
 
 
-def test_speech_darwin_say():
-    """Verify Darwin uses 'say' command."""
-    mock_result = subprocess.CompletedProcess(args=["say", "hello"], returncode=0)
-
-    with mock.patch("sys.platform", "darwin"), \
-         mock.patch("subprocess.run", return_value=mock_result) as mock_run:
-        success = speak("hello")
-        assert success is True
-        mock_run.assert_called_once_with(
-            ["say", "hello"],
-            shell=False,
-            capture_output=True,
-            text=True,
-            timeout=10.0,
-            env=None,
-            cwd=None,
-        )
-
-
-def test_speech_win32_powershell():
-    """Verify win32 uses powershell command."""
-    mock_result = subprocess.CompletedProcess(args=[], returncode=0)
-
-    with mock.patch("sys.platform", "win32"), \
-         mock.patch("subprocess.run", return_value=mock_result) as mock_run:
-        success = speak("hello")
-        assert success is True
-        mock_run.assert_called_once()
-        called_args = mock_run.call_args[0][0]
-        assert "powershell.exe" in called_args
-        assert "System.Speech.Synthesis.SpeechSynthesizer" in called_args[3]
-
-
-def test_speech_linux_espeak():
-    """Verify Linux uses 'espeak' command."""
-    mock_result = subprocess.CompletedProcess(args=["espeak", "hello"], returncode=0)
-
-    with mock.patch("sys.platform", "linux"), \
-         mock.patch("subprocess.run", return_value=mock_result) as mock_run:
-        success = speak("hello")
-        assert success is True
-        mock_run.assert_called_once_with(
-            ["espeak", "hello"],
-            shell=False,
-            capture_output=True,
-            text=True,
-            timeout=10.0,
-            env=None,
-            cwd=None,
-        )
-
-
-def test_speech_fallback_graceful():
-    """Verify speech functions handle exceptions and return False (graceful fallback)."""
-    # Force run to raise an exception representing missing utility
-    with mock.patch("subprocess.run", side_effect=FileNotFoundError("command not found")):
-        success = speak("hello")
-        assert success is False
