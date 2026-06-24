@@ -11,6 +11,8 @@ if not hasattr(datetime, "UTC"):
 
 agentwatch.scoring.drift._st_model = agentwatch.scoring.drift._ST_UNAVAILABLE
 
+# Mock EmbeddingProvider._load to prevent downloading SentenceTransformer weights in tests
+import agentwatch.memory.engine  # noqa: E402
 
 
 async def mock_load(self):
